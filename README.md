@@ -63,76 +63,75 @@ this.someObject = Object.assign({}, this.someObject, {
 
 ## 2、请简述 Diff 算法的执行过程
 
-答：
-  patch()函数
-    对比新旧vnode返回一个vnode，作为下一次对比的旧节点
-    createElm()函数
-    触发用户钩子函数init
-    把vnode转换成DOM对象，存储到vnode.elm中（注意：没有渲染到页面）	
-    sel是！创建注释节点
-    sel不为空：创建对应的DOM对象；触发模块的钩子函数create；创建所有节点对应的DOM对象；触发用户的钩子函数create；如果vnode有insert钩子函数，追加到队列
-    sel为空：穿件文本节点
-    返回vnode.elm
-removeVnode()批量删除节点
-addVnode()批量添加节点
-patchVnode()
-    触发prepatch钩子函数
-    触发update钩子函数
-    新节点有text属性，且不等于旧节点的text属性
-        如果老节点有children，移除老节点children对应的DOM元素
-        设置新节点对应DOM元素的textContent
-    新老节点都有children，且不相等
-        调用updateChildren()
-        对比节点，并且更新子节点的差异
-    只有新节点有children属性
-        如果老节点有text属性，清空对应DOM元素的textContent
-        添加所有子节点
-    只有老节点有children属性
-        移除所有的老节点
-    只有老节点有text属性
-        清空对用DOM元素的textContent
-    触发postpatch钩子函数
-uodateChildren()
-功能
-    diff算法的核心，对比新旧节点的children，更新DOM
-    执行过程
-    要对比两颗树的差异，我们可以取第一颗树的每一个节点一次和第二颗树的每一个节点比较，但是这样复杂度为O(n^3)
-    在DOM操作的时候我们很少很少会把一个父节点移动或更新到某一个子节点
-    因此只需要找同级别的子节点一次比较，然后在找下一级别的节点比较，这样算法的时间复杂度为0(n)
-    在进行同一级别节点比较的时候，首先会对新老节点数组的开始和结尾节点这只标记索引，遍历的过程中移动索引
-    在对开始和结束节点比较的时候，总共有四种情况
+    patch()函数
+        对比新旧vnode返回一个vnode，作为下一次对比的旧节点
+        createElm()函数
+        触发用户钩子函数init
+        把vnode转换成DOM对象，存储到vnode.elm中（注意：没有渲染到页面）	
+        sel是！创建注释节点
+        sel不为空：创建对应的DOM对象；触发模块的钩子函数create；创建所有节点对应的DOM对象；触发用户的钩子函数create；如果vnode有insert钩子函数，追加到队列
+        sel为空：穿件文本节点
+        返回vnode.elm
+    removeVnode()批量删除节点
+    addVnode()批量添加节点
+    patchVnode()
+        触发prepatch钩子函数
+        触发update钩子函数
+        新节点有text属性，且不等于旧节点的text属性
+            如果老节点有children，移除老节点children对应的DOM元素
+            设置新节点对应DOM元素的textContent
+        新老节点都有children，且不相等
+            调用updateChildren()
+            对比节点，并且更新子节点的差异
+        只有新节点有children属性
+            如果老节点有text属性，清空对应DOM元素的textContent
+            添加所有子节点
+        只有老节点有children属性
+            移除所有的老节点
+        只有老节点有text属性
+            清空对用DOM元素的textContent
+        触发postpatch钩子函数
+    uodateChildren()
+    功能
+        diff算法的核心，对比新旧节点的children，更新DOM
+        执行过程
+        要对比两颗树的差异，我们可以取第一颗树的每一个节点一次和第二颗树的每一个节点比较，但是这样复杂度为O(n^3)
+        在DOM操作的时候我们很少很少会把一个父节点移动或更新到某一个子节点
+        因此只需要找同级别的子节点一次比较，然后在找下一级别的节点比较，这样算法的时间复杂度为0(n)
+        在进行同一级别节点比较的时候，首先会对新老节点数组的开始和结尾节点这只标记索引，遍历的过程中移动索引
+        在对开始和结束节点比较的时候，总共有四种情况
+            oldstartVnode/newStartVnode（旧开始节点/新开始节点）
+            oldEndVnode/newEndVnode （旧结束节点/新结束节点）
+            oldStartVnode/newEndVnode （旧开始节点/新结束节点）
+            oldEndVnode/newStartVnode（旧结束节点/新开始节点）
+        开始节点和结束节点比较，这两种情况类似
         oldstartVnode/newStartVnode（旧开始节点/新开始节点）
         oldEndVnode/newEndVnode （旧结束节点/新结束节点）
-        oldStartVnode/newEndVnode （旧开始节点/新结束节点）
-        oldEndVnode/newStartVnode（旧结束节点/新开始节点）
-    开始节点和结束节点比较，这两种情况类似
-    oldstartVnode/newStartVnode（旧开始节点/新开始节点）
-    oldEndVnode/newEndVnode （旧结束节点/新结束节点）
-    如果oldstartVnode和newStartVnode是sameVnode（key和sel相同）
-        调用patchVnode对比和更新节点
-        把旧节点和新开始索引往后移动oldStartIdx++/oldStartIdx++
-    oldStartVnode/newEndVnode相同
+        如果oldstartVnode和newStartVnode是sameVnode（key和sel相同）
+            调用patchVnode对比和更新节点
+            把旧节点和新开始索引往后移动oldStartIdx++/oldStartIdx++
+        oldStartVnode/newEndVnode相同
+            调用patchVnode对比更新节点
+            把oldStartVnode对用的DOM元素，移动到右边
+            更新索引
+        oldEndVnode/newStartVnode（旧结束节点/新开始节点）相同
         调用patchVnode对比更新节点
-        把oldStartVnode对用的DOM元素，移动到右边
+        把oldEndVnode对用的DOM元素，移动到左边
         更新索引
-    oldEndVnode/newStartVnode（旧结束节点/新开始节点）相同
-    调用patchVnode对比更新节点
-    把oldEndVnode对用的DOM元素，移动到左边
-    更新索引
-    如果不是以上四种情况
-        遍历新节点，使用newStartVnode的key在老节点数组中找到相同节点
-        如果没有找到，说明newStartVnode是新节点
-            创建新节点对应的DOM元素，插入到DOM树中
-    如果找到了
-        判断新节点和找到的老节点的sel选择器是否相同
-        如果不同，说明节点被修改了
-            重新创建对应的DOM元素，插入到DOM树中
-        如果相同，把elmTOMove对应的DOM元素，移动到左边
-    循环结束
-        当老节点的所有子节点先遍历完（oldStartIdx>oldEndIdx），循环结束
-        新节点的所有子节点先遍历完（newStartIdx>oldStartIdx），循环结束
-    如果老节点的数组先遍历完，说明新节点有剩余，把剩余节点批量插入到右边
-    如果新节点的数组先遍历完，说明老节点有剩余，把剩余节点批量删除
+        如果不是以上四种情况
+            遍历新节点，使用newStartVnode的key在老节点数组中找到相同节点
+            如果没有找到，说明newStartVnode是新节点
+                创建新节点对应的DOM元素，插入到DOM树中
+        如果找到了
+            判断新节点和找到的老节点的sel选择器是否相同
+            如果不同，说明节点被修改了
+                重新创建对应的DOM元素，插入到DOM树中
+            如果相同，把elmTOMove对应的DOM元素，移动到左边
+        循环结束
+            当老节点的所有子节点先遍历完（oldStartIdx>oldEndIdx），循环结束
+            新节点的所有子节点先遍历完（newStartIdx>oldStartIdx），循环结束
+        如果老节点的数组先遍历完，说明新节点有剩余，把剩余节点批量插入到右边
+        如果新节点的数组先遍历完，说明老节点有剩余，把剩余节点批量删除
 
 ``` javascript
 updateChildren(parentElm, oldCh, newCh) {
